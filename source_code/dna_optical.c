@@ -1,3 +1,8 @@
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -44,19 +49,11 @@ char xor_base(char a, char b) {
 }
 
 void encrypt_image(const char *input, const char *output, const char *keyfile) {
-    FILE *fin = fopen(input, "rb");
-    if (!fin) { printf("Khong mo duoc file input\n"); return; }
+    int width, height, channels;
+    unsigned char *data = stbi_load(input, &width, &height, &channels, 0);
+    if (!data) { printf("Khong doc duoc anh input\n"); return; }
 
-    char header[3];
-    int width, height, maxval;
-    fscanf(fin, "%2s\n%d %d\n%d\n", header, &width, &height, &maxval);
-    if (strcmp(header, "P5") != 0) { printf("Chi ho tro PGM P5\n"); fclose(fin); return; }
-
-    int size = width * height;
-    unsigned char *data = (unsigned char*)malloc(size);
-    fread(data, 1, size, fin);
-    fclose(fin);
-
+    int size = width * height * channels;
     srand(time(NULL));
     char *optical = (char*)malloc(size * 4);
     for (int i = 0; i < size*4; i++) {
@@ -74,44 +71,37 @@ void encrypt_image(const char *input, const char *output, const char *keyfile) {
         enc_data[i] = dna_to_byte(dna_res);
     }
 
-    FILE *fout = fopen(output, "wb");
-    fprintf(fout, "P5\n%d %d\n255\n", width, height);
-    fwrite(enc_data, 1, size, fout);
-    fclose(fout);
+    stbi_write_png(output, width, height, channels, enc_data, width * channels);
 
     FILE *fkey = fopen(keyfile, "w");
-    fprintf(fkey, "%d %d\n", width, height);
+    fprintf(fkey, "%d %d %d\n", width, height, channels);
     for (int i = 0; i < size*4; i++) fputc(optical[i], fkey);
     fclose(fkey);
 
     printf("Ma hoa xong -> %s, key -> %s\n", output, keyfile);
 
-    free(data); free(optical); free(enc_data);
+    stbi_image_free(data);
+    free(optical); free(enc_data);
 }
 
 void decrypt_image(const char *input, const char *output, const char *keyfile) {
     FILE *fkey = fopen(keyfile, "r");
     if (!fkey) { printf("Khong mo duoc file key\n"); return; }
-    int width, height;
-    fscanf(fkey, "%d %d\n", &width, &height);
-    int size = width * height;
+    int width, height, channels;
+    fscanf(fkey, "%d %d %d\n", &width, &height, &channels);
+    int size = width * height * channels;
     char *optical = (char*)malloc(size * 4);
     fread(optical, 1, size*4, fkey);
     fclose(fkey);
 
-    FILE *fin = fopen(input, "rb");
-    if (!fin) { printf("Khong mo duoc file input\n"); return; }
-    char header[3];
-    int w2, h2, maxval;
-    fscanf(fin, "%2s\n%d %d\n%d\n", header, &w2, &h2, &maxval);
-    if (strcmp(header, "P5") != 0 || w2 != width || h2 != height) {
-        printf("File anh khong khop voi key\n");
-        fclose(fin); free(optical); return;
+    int w2,h2,c2;
+    unsigned char *data = stbi_load(input, &w2, &h2, &c2, 0);
+    if (!data || w2!=width || h2!=height || c2!=channels) {
+        printf("Anh va key khong khop!\n");
+        if (data) stbi_image_free(data);
+        free(optical);
+        return;
     }
-
-    unsigned char *data = (unsigned char*)malloc(size);
-    fread(data, 1, size, fin);
-    fclose(fin);
 
     unsigned char *dec_data = (unsigned char*)malloc(size);
     char dna_pixel[4], dna_key[4], dna_res[4];
@@ -124,14 +114,12 @@ void decrypt_image(const char *input, const char *output, const char *keyfile) {
         dec_data[i] = dna_to_byte(dna_res);
     }
 
-    FILE *fout = fopen(output, "wb");
-    fprintf(fout, "P5\n%d %d\n255\n", width, height);
-    fwrite(dec_data, 1, size, fout);
-    fclose(fout);
+    stbi_write_png(output, width, height, channels, dec_data, width*channels);
 
     printf("Giai ma xong -> %s\n", output);
 
-    free(optical); free(data); free(dec_data);
+    stbi_image_free(data);
+    free(optical); free(dec_data);
 }
 
 int main() {
@@ -141,13 +129,13 @@ int main() {
     scanf("%d", &choice);
 
     if (choice == 1) {
-        printf("Nhap file anh PGM goc: "); scanf("%s", in_file);
-        printf("Nhap file anh ma hoa output: "); scanf("%s", out_file);
+        printf("Nhap file anh PNG/JPG goc: "); scanf("%s", in_file);
+        printf("Nhap file anh ma hoa output (PNG): "); scanf("%s", out_file);
         printf("Nhap file key output: "); scanf("%s", key_file);
         encrypt_image(in_file, out_file, key_file);
     } else if (choice == 2) {
-        printf("Nhap file anh ma hoa: "); scanf("%s", in_file);
-        printf("Nhap file anh giai ma output: "); scanf("%s", out_file);
+        printf("Nhap file anh da ma hoa: "); scanf("%s", in_file);
+        printf("Nhap file anh giai ma output (PNG): "); scanf("%s", out_file);
         printf("Nhap file key: "); scanf("%s", key_file);
         decrypt_image(in_file, out_file, key_file);
     } else {
