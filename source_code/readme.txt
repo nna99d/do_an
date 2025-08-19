@@ -1,6 +1,6 @@
-Hai file này là **thư viện header dạng single-file** rất phổ biến do **Sean Barrett (nothings)** viết, được dùng để đọc/ghi ảnh mà không cần phụ thuộc vào các thư viện phức tạp như libpng, libjpeg.
+# Hai file này là **thư viện header dạng single-file** rất phổ biến do **Sean Barrett (nothings)** viết, được dùng để đọc/ghi ảnh mà không cần phụ thuộc vào các thư viện phức tạp như libpng, libjpeg.
 
-### 1. `stb_image.h`
+## 1. `stb_image.h`
 
 👉 Dùng để **đọc (load)** các định dạng ảnh phổ biến (PNG, JPG, BMP, TGA, GIF, PSD, HDR, PIC, PNM, …) thành dữ liệu thô (mảng `unsigned char*`).
 
@@ -18,7 +18,7 @@ Hai file này là **thư viện header dạng single-file** rất phổ biến d
 
 ---
 
-### 2. `stb_image_write.h`
+## 2. `stb_image_write.h`
 
 👉 Dùng để **ghi (save)** ảnh ra các định dạng phổ biến như PNG, JPG, BMP, TGA, HDR.
 
@@ -37,7 +37,7 @@ Hai file này là **thư viện header dạng single-file** rất phổ biến d
 
 ---
 
-### 3. Cách dùng
+## 3. Cách dùng
 
 * Chỉ cần tải file `.h` về và đặt cùng thư mục project.
 * Trong **một file .c/.cpp duy nhất**, bạn phải định nghĩa:
