@@ -1,7 +1,3 @@
-// dna_en.c
-// Build: gcc -O3 -march=native dna_en.c -o dna_en
-// Requires: stb_image.h in same folder
-
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
@@ -15,7 +11,7 @@
   #include <wincrypt.h>
 #endif
 
-// ---------- small SHA-256 implementation ----------
+// ---------- SHA-256 ----------
 typedef struct {
     uint32_t state[8];
     uint64_t bitlen;
@@ -110,7 +106,7 @@ static int csprng_get_bytes(uint8_t *buf, size_t len){
 
 static inline uint8_t rotl8(uint8_t v,unsigned r){ r&=7; return (uint8_t)((v<<r)|(v>>(8-r))); }
 
-// ---------- DNA helpers ----------
+// ---------- DNA ----------
 static inline char bits_to_base(uint8_t b2){ switch(b2&3){case 0: return 'A'; case 1: return 'C'; case 2: return 'G'; default: return 'T';}}
 static inline uint8_t base_to_bits(char base){ switch(base){case 'A':return 0;case 'C':return 1;case 'G':return 2;case 'T':return 3; default:return 0;}}
 
@@ -161,7 +157,7 @@ void dna_swap_pairs(char *bases, size_t n){
 // ---------- Header ----------
 #pragma pack(push,1)
 typedef struct {
-    uint32_t magic; // "OAND"
+    uint32_t magic;
     uint32_t width;
     uint32_t height;
     uint8_t channels;
@@ -181,12 +177,12 @@ int main(void){
 
     int w,h,channels;
     unsigned char *img = stbi_load(inname,&w,&h,&channels,0);
-    if(!img){ fprintf(stderr,"Failed to load image %s\n",inname); return 2;}
+    if(!img){ fprintf(stderr,"Loi tai anh len %s\n",inname); return 2;}
     size_t total_bytes=(size_t)w*(size_t)h*channels;
 
     FILE *fenc=fopen(outenc,"wb");
     FILE *fkey=fopen(outkey,"wb");
-    if(!fenc||!fkey){ fprintf(stderr,"Cannot open output files\n"); stbi_image_free(img); return 3;}
+    if(!fenc||!fkey){ fprintf(stderr,"Khong the mo file\n"); stbi_image_free(img); return 3;}
 
     enc_header_t hdr={0x4F414E44,(uint32_t)w,(uint32_t)h,(uint8_t)channels,{0}};
     fwrite(&hdr,sizeof(hdr),1,fenc);
@@ -203,7 +199,7 @@ int main(void){
 
     while(processed<total_bytes){
         size_t toproc=total_bytes-processed; if(toproc>CHUNK) toproc=CHUNK;
-        if(csprng_get_bytes(keybuf,toproc)!=0){ fprintf(stderr,"CSPRNG failure\n"); fclose(fenc); fclose(fkey); stbi_image_free(img); free(cipherbuf); free(keybuf); free(basesbuf); return 5;}
+        if(csprng_get_bytes(keybuf,toproc)!=0){ fprintf(stderr,"Loi CSPRNG\n"); fclose(fenc); fclose(fkey); stbi_image_free(img); free(cipherbuf); free(keybuf); free(basesbuf); return 5;}
 
         // --- DNA encode ---
         bytes_to_bases(&img[processed],toproc,basesbuf);
@@ -215,12 +211,12 @@ int main(void){
                 case 0: dna_complement(&basesbuf[bstart],4); break;
                 case 1: dna_reverse(&basesbuf[bstart],4); break;
                 case 2: dna_swap_pairs(&basesbuf[bstart],4); break;
-                case 3: break; // do nothing
+                case 3: break;
             }
         }
         bases_to_bytes(basesbuf,toproc*4,cipherbuf);
 
-        // --- rotate + XOR as before ---
+        // --- rotate + XOR ---
         for(size_t i=0;i<toproc;i++){
             uint8_t p=cipherbuf[i];
             uint8_t r=keybuf[i];
@@ -240,6 +236,6 @@ int main(void){
     fclose(fenc); fclose(fkey);
     stbi_image_free(img);
 
-    printf("Encrypted %zu bytes -> %s\nKey file -> %s (16-byte truncated SHA-256 appended)\n",total_bytes,outenc,outkey);
+    printf("Encrypted -> %s\nKey file -> %s\n",outenc,outkey);
     return 0;
 }
