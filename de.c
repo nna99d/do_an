@@ -1,7 +1,3 @@
-// dna_de.c
-// Build: gcc -O3 -march=native dna_de.c -o dna_de
-// Requires: stb_image_write.h in same folder
-
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
 
@@ -12,7 +8,7 @@
 
 static inline uint8_t rotr8(uint8_t v,unsigned r){ r&=7; return (uint8_t)((v>>r)|(v<<(8-r))); }
 
-// ---------- DNA helpers ----------
+// ---------- DNA ----------
 static inline char bits_to_base(uint8_t b2){ switch(b2&3){case 0: return 'A'; case 1: return 'C'; case 2: return 'G'; default: return 'T';}}
 static inline uint8_t base_to_bits(char base){ switch(base){case 'A':return 0;case 'C':return 1;case 'G':return 2;case 'T':return 3; default:return 0;}}
 
@@ -63,7 +59,7 @@ void dna_swap_pairs(char *bases, size_t n){
 // ---------- Header ----------
 #pragma pack(push,1)
 typedef struct {
-    uint32_t magic; // "OAND"
+    uint32_t magic; 
     uint32_t width;
     uint32_t height;
     uint8_t channels;
@@ -76,15 +72,15 @@ int main(void){
     char encfile[256], keyfile[256], outimg[256];
     printf("Nhap file ma hoa (.enc): "); scanf("%255s", encfile);
     printf("Nhap file key (.bin): "); scanf("%255s", keyfile);
-    printf("Nhap ten file anh goc (.png): "); scanf("%255s", outimg);
+    printf("Nhap ten file anh dau ra (.png): "); scanf("%255s", outimg);
 
     FILE *fenc=fopen(encfile,"rb");
     FILE *fkey=fopen(keyfile,"rb");
-    if(!fenc||!fkey){ fprintf(stderr,"Cannot open files\n"); return 1;}
+    if(!fenc||!fkey){ fprintf(stderr,"Khong the mo file\n"); return 1;}
 
     enc_header_t hdr_enc;
-    if(fread(&hdr_enc,sizeof(hdr_enc),1,fenc)!=1){ fprintf(stderr,"Failed to read header\n"); return 2;}
-    fseek(fkey,sizeof(hdr_enc),SEEK_SET); // skip key header
+    if(fread(&hdr_enc,sizeof(hdr_enc),1,fenc)!=1){ fprintf(stderr,"Loi\n"); return 2;}
+    fseek(fkey,sizeof(hdr_enc),SEEK_SET); 
 
     size_t total_bytes=(size_t)hdr_enc.width*hdr_enc.height*hdr_enc.channels;
     uint8_t *cipherbuf=malloc(1<<16);
@@ -98,7 +94,7 @@ int main(void){
 
     while(processed<total_bytes){
         size_t toproc=total_bytes-processed; if(toproc>CHUNK) toproc=CHUNK;
-        if(fread(cipherbuf,1,toproc,fenc)!=toproc || fread(keybuf,1,toproc,fkey)!=toproc){ fprintf(stderr,"Read error\n"); return 4;}
+        if(fread(cipherbuf,1,toproc,fenc)!=toproc || fread(keybuf,1,toproc,fkey)!=toproc){ fprintf(stderr,"Loi doc\n"); return 4;}
 
         // --- reverse rotate + XOR ---
         for(size_t i=0;i<toproc;i++){
