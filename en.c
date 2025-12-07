@@ -11,7 +11,7 @@
   #include <wincrypt.h>
 #endif
 
-// ---------- SHA-256 ----------
+//  SHA-256 
 typedef struct {
     uint32_t state[8];
     uint64_t bitlen;
@@ -86,7 +86,7 @@ void sha256_final(sha256_ctx *ctx,uint8_t hash[32]){
             hash[i+j*4]=(ctx->state[j]>>(24-i*8))&0xFF;
 }
 
-// ---------- end sha256 ----------
+// end sha256 
 
 // Portable CSPRNG
 static int csprng_get_bytes(uint8_t *buf, size_t len){
@@ -106,7 +106,7 @@ static int csprng_get_bytes(uint8_t *buf, size_t len){
 
 static inline uint8_t rotl8(uint8_t v,unsigned r){ r&=7; return (uint8_t)((v<<r)|(v>>(8-r))); }
 
-// ---------- DNA ----------
+// DNA 
 static inline char bits_to_base(uint8_t b2){ switch(b2&3){case 0: return 'A'; case 1: return 'C'; case 2: return 'G'; default: return 'T';}}
 static inline uint8_t base_to_bits(char base){ switch(base){case 'A':return 0;case 'C':return 1;case 'G':return 2;case 'T':return 3; default:return 0;}}
 
@@ -154,7 +154,7 @@ void dna_swap_pairs(char *bases, size_t n){
     }
 }
 
-// ---------- Header ----------
+// Header
 #pragma pack(push,1)
 typedef struct {
     uint32_t magic;
@@ -165,7 +165,7 @@ typedef struct {
 } enc_header_t;
 #pragma pack(pop)
 
-// ---------- Main ----------
+//  Main 
 int main(void){
     char inname[256], outenc[256], outkey[256];
     printf("Nhap ten file anh goc (PNG/JPG): ");
@@ -201,7 +201,7 @@ int main(void){
         size_t toproc=total_bytes-processed; if(toproc>CHUNK) toproc=CHUNK;
         if(csprng_get_bytes(keybuf,toproc)!=0){ fprintf(stderr,"Loi CSPRNG\n"); fclose(fenc); fclose(fkey); stbi_image_free(img); free(cipherbuf); free(keybuf); free(basesbuf); return 5;}
 
-        // --- DNA encode ---
+        // DNA encode 
         bytes_to_bases(&img[processed],toproc,basesbuf);
         // DNA operations per byte key
         for(size_t i=0;i<toproc;i++){
@@ -216,7 +216,7 @@ int main(void){
         }
         bases_to_bytes(basesbuf,toproc*4,cipherbuf);
 
-        // --- rotate + XOR ---
+        //  rotate + XOR 
         for(size_t i=0;i<toproc;i++){
             uint8_t p=cipherbuf[i];
             uint8_t r=keybuf[i];
