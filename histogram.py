@@ -47,11 +47,38 @@ def plot_histograms(orig_img, enc_img, save_prefix=None):
             plt.savefig(f"{save_prefix}_hist_{name}.png")
         plt.show()
 
+# ====== Histogram RGB gộp tất cả ======
+def plot_hist_merged(orig_img, enc_img, save_prefix=None):
+    plt.figure(figsize=(10,4))
+
+    # ---- Original ----
+    plt.subplot(1,2,1)
+    plt.title("Original - RGB Merged")
+    merged_orig = orig_img.reshape(-1, 3).ravel()   # gộp R,G,B
+    plt.hist(merged_orig, bins=256, range=(0,255))
+    plt.xlabel("Intensity")
+    plt.ylabel("Count")
+
+    # ---- Encrypted ----
+    plt.subplot(1,2,2)
+    plt.title("Encrypted - RGB Merged")
+    merged_enc = enc_img.reshape(-1, 3).ravel()
+    plt.hist(merged_enc, bins=256, range=(0,255))
+    plt.xlabel("Intensity")
+    plt.ylabel("Count")
+
+    plt.tight_layout()
+    if save_prefix:
+        plt.savefig(f"{save_prefix}_hist_merged.png")
+
+    plt.show()
+
+
 # ====== Thí nghiệm ======
 # Đọc ảnh gốc
-orig = np.array(Image.open("dog.jpg").convert("RGB"))  # thay test.png bằng ảnh của bạn
+orig = np.array(Image.open("dog.jpg").convert("RGB"))
 # Đọc ảnh mã hóa
-enc_img, shape = read_enc("en_out.enc")  # thay test.enc bằng ảnh đã mã hóa
+enc_img, shape = read_enc("en_out.enc") 
 
 # Tính chỉ số
 print("Ảnh gốc:")
@@ -61,3 +88,4 @@ print(hist_and_metrics(enc_img))
 
 # Vẽ histogram
 plot_histograms(orig, enc_img, save_prefix="result")
+plot_hist_merged(orig, enc_img, save_prefix="result")
