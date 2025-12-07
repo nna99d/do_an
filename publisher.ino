@@ -4,7 +4,7 @@
 #include <WiFiClientSecure.h>
 #include "mbedtls/md.h"
 
-// ====== WiFi & MQTT ======
+// WiFi & MQTT 
 const char* ssid = "wifi của chùa";
 const char* password = "hinhnhula9so9";
 
@@ -20,7 +20,7 @@ const char* TOPIC_CMD   = "esp32cam/cmd";
 WiFiClientSecure wifiClient;
 PubSubClient client(wifiClient);
 
-// ==== ESP32-CAM AI Thinker Pinout ====
+// ESP32-CAM AI Thinker Pinout
 #define PWDN_GPIO_NUM     32
 #define RESET_GPIO_NUM    -1
 #define XCLK_GPIO_NUM      0
@@ -38,7 +38,7 @@ PubSubClient client(wifiClient);
 #define HREF_GPIO_NUM     23
 #define PCLK_GPIO_NUM     22
 
-// ==== Camera init ====
+// Camera init
 void initCamera() {
   camera_config_t config;
   config.ledc_channel = LEDC_CHANNEL_0;
@@ -76,7 +76,7 @@ void initCamera() {
   }
 }
 
-// ==== Helpers ====
+
 inline uint8_t rotl8(uint8_t v, unsigned r){ r&=7; return (uint8_t)((v<<r)|(v>>(8-r))); }
 
 char toDNA(uint8_t b2){ switch(b2&3){case 0:return 'A';case 1:return 'C';case 2:return 'G';default:return 'T';}}
@@ -113,7 +113,7 @@ void sha256(const uint8_t* input, size_t len, uint8_t out[32]) {
   mbedtls_md_free(&ctx);
 }
 
-// ==== MQTT callback ====
+// MQTT callback 
 void callback(char* topic, byte* payload, unsigned int length) {
   String msg;
   for (unsigned int i=0;i<length;i++) msg += (char)payload[i];
