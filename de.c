@@ -8,7 +8,7 @@
 
 static inline uint8_t rotr8(uint8_t v,unsigned r){ r&=7; return (uint8_t)((v>>r)|(v<<(8-r))); }
 
-// ---------- DNA ----------
+// DNA
 static inline char bits_to_base(uint8_t b2){ switch(b2&3){case 0: return 'A'; case 1: return 'C'; case 2: return 'G'; default: return 'T';}}
 static inline uint8_t base_to_bits(char base){ switch(base){case 'A':return 0;case 'C':return 1;case 'G':return 2;case 'T':return 3; default:return 0;}}
 
@@ -56,7 +56,7 @@ void dna_swap_pairs(char *bases, size_t n){
     }
 }
 
-// ---------- Header ----------
+//  Header 
 #pragma pack(push,1)
 typedef struct {
     uint32_t magic; 
@@ -67,7 +67,7 @@ typedef struct {
 } enc_header_t;
 #pragma pack(pop)
 
-// ---------- Main ----------
+// Main 
 int main(void){
     char encfile[256], keyfile[256], outimg[256];
     printf("Nhap file ma hoa (.enc): "); scanf("%255s", encfile);
@@ -96,13 +96,13 @@ int main(void){
         size_t toproc=total_bytes-processed; if(toproc>CHUNK) toproc=CHUNK;
         if(fread(cipherbuf,1,toproc,fenc)!=toproc || fread(keybuf,1,toproc,fkey)!=toproc){ fprintf(stderr,"Loi doc\n"); return 4;}
 
-        // --- reverse rotate + XOR ---
+        // reverse rotate + XOR 
         for(size_t i=0;i<toproc;i++){
             uint8_t c=cipherbuf[i], r=keybuf[i];
             cipherbuf[i]=rotr8(c^r,r&0x07);
         }
 
-        // --- DNA decode ---
+        // DNA decode
         bytes_to_bases(cipherbuf,toproc,basesbuf);
         for(size_t i=0;i<toproc;i++){
             uint8_t k=keybuf[i];
