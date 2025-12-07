@@ -15,11 +15,11 @@ meta = None
 img_buf = bytearray()
 expected_len = 0
 
-# ==== ROTL/ROTR ====
+# ROTL/ROTR 
 def rotl8(x, r): return ((x << r) & 0xFF) | (x >> (8-r))
 def rotr8(x, r): return ((x >> r) | ((x << (8-r)) & 0xFF)) & 0xFF
 
-# ==== DNA encode/decode ====
+# DNA encode/decode
 def toDNA(v):
     return "ACGT"[v & 3]
 
@@ -54,7 +54,7 @@ def dnaInverse(b, k):
         out |= (fromDNA(dna[i]) << (2*i))
     return out
 
-# ==== MQTT callbacks ====
+#  MQTT callbacks
 def on_connect(client, userdata, flags, rc):
     print("Connected with rc:", rc)
     client.subscribe(TOPIC_META)
@@ -98,7 +98,7 @@ def on_message(client, userdata, msg):
             print("[+] Image saved as recv.jpg")
             img_buf.clear()
 
-# ==== Run ====
+# Run 
 client = mqtt.Client()
 client.username_pw_set(USER, PASS)
 client.tls_set()   # enable TLS
